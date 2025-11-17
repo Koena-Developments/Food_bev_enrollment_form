@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Enrolment Wizard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    :root {
+            --primary-color: #4f46e5;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; 
+        }
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        .step-active {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .step-complete {
+            border-color: var(--primary-color);
+            background-color: #a5b4fc; 
+            color: white;
+        }
+        .form-card {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3) !important;
+        }
+        #modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            600: '#4f46e5',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="modal-overlay" class="fixed inset-0 z-50 hidden items-center justify-center">
+        <div class="bg-white p-6 rounded-xl form-card max-w-sm mx-auto">
+            <h3 class="text-xl font-semibold text-red-600 mb-4" id="modal-title">Error</h3>
+            <p class="text-gray-700 mb-6" id="modal-message"></p>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+        <div class="w-full max-w-4xl bg-white form-card rounded-2xl p-6 md:p-10">
+            
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Skills Programme Enrolment</h1>
+            <p class="text-center text-gray-600 mb-10">Please complete all required fields to proceed.</p>
+
+            <!-- Step Indicators -->
+            <div class="flex justify-between items-center mb-10 max-w-2xl mx-auto">
+                <div id="step-1-indicator" class="step-indicator flex flex-col items-center w-1/4">
+                    <div class="h-10 w-10 flex items-center justify-center rounded-full border-2 border-indigo-600 text-indigo-600 font-bold step-active">1</div>
+                    <span class="text-xs mt-2 text-indigo-600 font-medium text-center">Company</span>
+                </div>
+                <div class="flex-grow h-0.5 bg-gray-300 mx-1"></div>
+
+                <div id="step-2-indicator" class="step-indicator flex flex-col items-center w-1/4">
+                    <div class="h-10 w-10 flex items-center justify-center rounded-full border-2 border-gray-400 text-gray-500 font-bold">2</div>
+                    <span class="text-xs mt-2 text-gray-500 text-center">Learner Personal</span>
+                </div>
+                <div class="flex-grow h-0.5 bg-gray-300 mx-1"></div>
+
+                <div id="step-3-indicator" class="step-indicator flex flex-col items-center w-1/4">
+                    <div class="h-10 w-10 flex items-center justify-center rounded-full border-2 border-gray-400 text-gray-500 font-bold">3</div>
+                    <span class="text-xs mt-2 text-gray-500 text-center">Enrolment Details</span>
+                </div>
+                <div class="flex-grow h-0.5 bg-gray-300 mx-1"></div>
+
+                <div id="step-4-indicator" class="step-indicator flex flex-col items-center w-1/4">
+                    <div class="h-10 w-10 flex items-center justify-center rounded-full border-2 border-gray-400 text-gray-500 font-bold">4</div>
+                    <span class="text-xs mt-2 text-gray-500 text-center">Review & Finish</span>
+                </div>
+            </div>
+
+            <form id="enrolment-form" class="space-y-6" action="https://formspree.io/f/xwpazwby" method="POST">
+
+                <!-- STEP 1: COMPANY DETAILS -->
+                <div id="step-1" class="space-y-6 step-content">
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-6">1. Company Details (Section 1)</h2>
+                    
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">Company Name <span class="text-red-500">*</span></span>
+                        <input type="text" id="companyName" name="companyName" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Levy Number (L Number) <span class="text-red-500">*</span></span>
+                            <input type="text" id="levyLNumber" name="levyLNumber" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">T Number <span class="text-red-500">*</span></span>
+                            <input type="text" id="tNumber" name="tNumber" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">SDF Name <span class="text-red-500">*</span></span>
+                        <input type="text" id="sdfName" name="sdfName" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">SDF Telephone No. <span class="text-red-500">*</span></span>
+                            <input type="tel" id="sdfTel" name="sdfTel" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">SDF Cellphone No. <span class="text-red-500">*</span></span>
+                            <input type="tel" id="sdfCell" name="sdfCell" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">SDF e-mail address <span class="text-red-500">*</span></span>
+                        <input type="email" id="sdfEmail" name="sdfEmail" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+                </div>
+
+                <div id="step-2" class="space-y-6 step-content hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-6">2. Learner Personal Details (Section 2, Part 1)</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Title <span class="text-red-500">*</span></span>
+                            <select id="learnerTitle" name="learnerTitle" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Select...</option>
+                                <option value="Mr">Mr</option>
+                                <option value="Ms">Ms</option>
+                                <option value="Mrs">Mrs</option>
+                                <option value="Dr">Dr</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Full Names <span class="text-red-500">*</span></span>
+                            <input type="text" id="learnerNames" name="learnerNames" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Surname <span class="text-red-500">*</span></span>
+                            <input type="text" id="learnerSurname" name="learnerSurname" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">ID Number <span class="text-red-500">*</span></span>
+                            <input type="text" id="learnerID" name="learnerID" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Date of Birth <span class="text-red-500">*</span></span>
+                            <input type="date" id="learnerDOB" name="learnerDOB" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Nationality <span class="text-red-500">*</span></span>
+                            <input type="text" id="learnerNationality" name="learnerNationality" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                            <!-- <option value="">Select...</option> -->
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="block">
+                            <span class="text-gray-700 font-medium block mb-2">Gender <span class="text-red-500">*</span></span>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="learnerGender" value="Male" required class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">Male</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="learnerGender" value="Female" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">Female</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Race <span class="text-red-500">*</span></span>
+                            <select id="learnerRace" name="learnerRace" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Select...</option>
+                                <option value="African">African</option>
+                                <option value="Coloured">Coloured</option>
+                                <option value="Indian/Asian">Indian/Asian</option>
+                                <option value="White">White</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="block">
+                            <span class="text-gray-700 font-medium block mb-2">Disabled? <span class="text-red-500">*</span></span>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="learnerDisabled" value="Yes" required onchange="toggleSpecifyDisabled(true)" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">Yes</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="learnerDisabled" value="No" onchange="toggleSpecifyDisabled(false)" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">No</span>
+                                </label>
+                            </div>
+                        </div>
+                        <label id="specifyDisabledGroup" class="block col-span-2 hidden">
+                            <span class="text-gray-700 font-medium">If Yes, then Specify <span class="text-red-500">*</span></span>
+                            <input type="text" id="specifyDisabled" name="specifyDisabled" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Learner Telephone No. <span class="text-red-500">*</span></span>
+                            <input type="tel" id="learnerTel" name="learnerTel" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Learner Cellphone No. <span class="text-red-500">*</span></span>
+                            <input type="tel" id="learnerCell" name="learnerCell" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">Learner Email address <span class="text-red-500">*</span></span>
+                        <input type="email" id="learnerEmail" name="learnerEmail" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">Physical Address <span class="text-red-500">*</span></span>
+                        <textarea id="learnerAddress" name="learnerAddress" rows="3" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Postal Code <span class="text-red-500">*</span></span>
+                            <input type="text" id="learnerPostalCode" name="learnerPostalCode" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Municipality <span class="text-red-500">*</span></span>
+                            <input type="text" id="learnerMunicipality" name="learnerMunicipality" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Province <span class="text-red-500">*</span></span>
+                            <select id="learnerProvince" name="learnerProvince" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Select...</option>
+                                <option value="EC">Eastern Cape</option>
+                                <option value="FS">Free State</option>
+                                <option value="GP">Gauteng</option>
+                                <option value="KZN">KwaZulu-Natal</option>
+                                <option value="LP">Limpopo</option>
+                                <option value="MP">Mpumalanga</option>
+                                <option value="NW">North West</option>
+                                <option value="NC">Northern Cape</option>
+                                <option value="WC">Western Cape</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="step-3" class="space-y-6 step-content hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-6">3. Education, Status & Enrolment</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Highest Qualification <span class="text-red-500">*</span></span>
+                            <input type="text" id="highestQualification" name="highestQualification" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Name of Institution/School <span class="text-red-500">*</span></span>
+                            <input type="text" id="institutionName" name="institutionName" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Year of Qualification <span class="text-red-500">*</span></span>
+                            <input type="number" id="qualificationYear" name="qualificationYear" min="1900" max="2099" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="block">
+                            <span class="text-gray-700 font-medium block mb-2">Employment Status <span class="text-red-500">*</span></span>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="employmentStatus" value="Employed" required class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">Employed</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="employmentStatus" value="Unemployed" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">Unemployed</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="block">
+                            <span class="text-gray-700 font-medium block mb-2">POPI Act Status <span class="text-red-500">*</span></span>
+                            <p class="text-sm text-gray-500 mb-2">(Agree for info to be used for research, reporting, audit purposes?)</p>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="popiStatus" value="YES" required class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">YES</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="popiStatus" value="NO" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                                    <span class="ml-2">NO</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-gray-800 pt-4">Learner Enrolment Details (Section 3)</h3>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">Full Title of Skills Programme <span class="text-red-500">*</span></span>
+                        <input type="text" id="programmeTitle" name="programmeTitle" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Programme Registration Number <span class="text-red-500">*</span></span>
+                            <input type="text" id="programmeRegNo" name="programmeRegNo" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Training Commencement Date <span class="text-red-500">*</span></span>
+                            <input type="date" id="trainingCommence" name="trainingCommence" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">Training End Date <span class="text-red-500">*</span></span>
+                            <input type="date" id="trainingEnd" name="trainingEnd" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">OFO CODE <span class="text-red-500">*</span></span>
+                        <input type="text" id="ofoCode" name="ofoCode" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+                </div>
+
+                <div id="step-4" class="space-y-6 step-content hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-6">4. Training Provider & Review (Section 4)</h2>
+                    
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">Training Provider Company Name <span class="text-red-500">*</span></span>
+                        <input type="text" id="tpCompanyName" name="tpCompanyName" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+
+                    <label class="block">
+                        <span class="text-gray-700 font-medium">Represented by <span class="text-red-500">*</span></span>
+                        <input type="text" id="tpRepresentative" name="tpRepresentative" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">TP Telephone No. <span class="text-red-500">*</span></span>
+                            <input type="tel" id="tpTel" name="tpTel" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 font-medium">TP Cellphone No. <span class="text-red-500">*</span></span>
+                            <input type="tel" id="tpCell" name="tpCell" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        </label>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-gray-800 pt-8 mt-8 border-t">Review Summary</h3>
+                    <div id="review-summary" class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <p class="text-gray-500">Form data will appear here once previous steps are complete.</p>
+                    </div>
+
+                    <div class="flex items-start space-x-3 pt-6">
+                        <input type="checkbox" id="declarationCheck" required class="mt-1 form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                        <label for="declarationCheck" class="text-sm text-gray-700">
+                            I, the learner, hereby declare that all the information provided is accurate and complete. <span class="text-red-500">*</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <div class="flex justify-between pt-8 border-t mt-8">
+                    <button type="button" id="prev-btn" onclick="prevStep()" class="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-md hover:bg-gray-300 transition duration-150 hidden">
+                        &larr; Previous
+                    </button>
+                    <button type="button" id="next-btn" onclick="nextStep()" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 ml-auto">
+                        Next Step &rarr;
+                    </button>
+                    <button type="submit" id="submit-btn" onclick="submitForm()" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150 hidden ml-auto">
+                        Submit Enrolment
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        const formData = {};
+        const form = document.getElementById('enrolment-form');
+        
+        // Custom Modal Functions
+        function showModal(title, message) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-overlay').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('modal-overlay').classList.remove('flex');
+        }
+
+        function toggleSpecifyDisabled(show) {
+            const group = document.getElementById('specifyDisabledGroup');
+            const input = document.getElementById('specifyDisabled');
+            if (show) {
+                group.classList.remove('hidden');
+                input.setAttribute('required', 'required');
+            } else {
+                group.classList.add('hidden');
+                input.removeAttribute('required');
+                input.value = ''; 
+            }
+        }
+        
+
+        function updateStep(newStep) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('prev-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('submit-btn').classList.add('hidden');
+
+            document.getElementById(`step-${newStep}`).classList.remove('hidden');
+
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`step-${i}-indicator`).querySelector('div');
+                const text = document.getElementById(`step-${i}-indicator`).querySelector('span');
+                
+                indicator.classList.remove('step-active', 'step-complete', 'border-indigo-600', 'bg-indigo-600', 'bg-red-500', 'text-white');
+                text.classList.remove('text-indigo-600');
+
+                if (i < newStep) {
+                    indicator.classList.add('step-complete');
+                    text.classList.add('text-indigo-600');
+                } else if (i === newStep) {
+                    indicator.classList.add('step-active');
+                    text.classList.add('text-indigo-600');
+                } else {
+                    indicator.classList.add('border-gray-400', 'text-gray-500');
+                    text.classList.add('text-gray-500');
+                }
+            }
+            if (newStep > 1) {
+                document.getElementById('prev-btn').classList.remove('hidden');
+            }
+            if (newStep < totalSteps) {
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else if (newStep === totalSteps) {
+                generateReviewSummary();
+                document.getElementById('submit-btn').classList.remove('hidden');
+                document.getElementById('next-btn').classList.add('hidden'); 
+            }
+
+            currentStep = newStep;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function validateStep(step) {
+            const stepElement = document.getElementById(`step-${step}`);
+            const requiredFields = stepElement.querySelectorAll('[required]');
+            let allValid = true;
+            
+            requiredFields.forEach(field => {
+                let isValid = false;
+                
+                if (field.type === 'radio' || field.type === 'checkbox') {
+                    if (document.querySelector(`input[name="${field.name}"]:checked`)) {
+                        isValid = true;
+                    }
+                } else if (field.value.trim() !== '') {
+                    isValid = true;
+                }
+                
+                if (!isValid) {
+                    allValid = false;
+                    field.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                } else {
+                    field.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                    if (field.type === 'email' && !/^\S+@\S+\.\S+$/.test(field.value)) {
+                        allValid = false;
+                        field.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                    }
+                }
+
+                if (field.id === 'specifyDisabled' && field.hasAttribute('required') && field.value.trim() === '') {
+                    allValid = false;
+                }
+            });
+
+            return allValid;
+        }
+
+        function collectStepData(step) {
+            const stepElement = document.getElementById(`step-${step}`);
+            const fields = stepElement.querySelectorAll('input, select, textarea');
+            
+            fields.forEach(field => {
+                if (field.type === 'radio' && field.checked) {
+                    formData[field.name] = field.value;
+                } else if (field.type !== 'radio' && field.type !== 'checkbox') {
+                    formData[field.name] = field.value.trim();
+                } else if (field.type === 'checkbox') {
+                    formData[field.name] = field.checked;
+                }
+            });
+            console.log(`Data collected after Step ${step}:`, formData);
+        }
+
+        function nextStep() {
+            if (validateStep(currentStep)) {
+                collectStepData(currentStep);
+                updateStep(currentStep + 1);
+            } else {
+                showModal('Required Fields Missing', 'Please fill in all mandatory fields before moving to the next step.');
+            }
+        }
+
+        function prevStep() {
+            updateStep(currentStep - 1);
+        }
+
+        function generateReviewSummary() {
+            const summaryDiv = document.getElementById('review-summary');
+            let html = '<dl class="divide-y divide-gray-200">';
+            
+            const sections = [
+                { title: 'Company Details', fields: ['companyName', 'levyLNumber', 'tNumber', 'sdfName', 'sdfTel', 'sdfCell', 'sdfEmail'] },
+                { title: 'Learner Personal Details', fields: ['learnerTitle', 'learnerNames', 'learnerSurname', 'learnerID', 'learnerDOB', 'learnerNationality', 'learnerGender', 'learnerRace', 'learnerDisabled', 'specifyDisabled', 'learnerTel', 'learnerCell', 'learnerEmail', 'learnerAddress', 'learnerPostalCode', 'learnerMunicipality', 'learnerProvince'] },
+                { title: 'Education & Enrolment', fields: ['highestQualification', 'institutionName', 'qualificationYear', 'employmentStatus', 'popiStatus', 'programmeTitle', 'programmeRegNo', 'trainingCommence', 'trainingEnd', 'ofoCode'] },
+                { title: 'Training Provider Details', fields: ['tpCompanyName', 'tpRepresentative', 'tpTel', 'tpCell'] }
+            ];
+
+            sections.forEach(section => {
+                html += `<div class="py-3 px-4 bg-gray-100 font-bold text-lg text-indigo-700 mt-4">${section.title}</div>`;
+                section.fields.forEach(key => {
+                    const value = formData[key] || 'N/A';
+                    if (value !== 'N/A' && (key !== 'specifyDisabled' || formData['learnerDisabled'] === 'Yes')) {
+                        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+                        html += `
+                            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                                <dt class="text-sm font-medium text-gray-500">${label}</dt>
+                                <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">${value}</dd>
+                            </div>
+                        `;
+                    }
+                });
+            });
+
+            html += '</dl>';
+            summaryDiv.innerHTML = html;
+        }
+
+        function submitForm() {
+            if (!document.getElementById('declarationCheck').checked) {
+                showModal('Declaration Required', 'Please accept the declaration before submitting the form.');
+                return;
+            }
+
+            
+            console.log("--- FINAL SUBMISSION DATA ---");
+            console.log(JSON.stringify(formData, null, 2));
+            console.log("--- END SUBMISSION DATA ---");
+
+            document.getElementById('step-4').innerHTML = `
+                <div class="flex flex-col items-center justify-center p-10 text-center">
+                    <svg class="w-20 h-20 text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-3xl font-bold text-green-700 mb-3">Enrolment Successful!</h2>
+                    <p class="text-lg text-gray-600">Thank you. Your learner enrolment application has been successfully submitted for processing.</p>
+                    <p class="mt-4 text-sm text-gray-500">The collected data was logged to the console for demonstration purposes.</p>
+                </div>
+            `;
+            document.getElementById('prev-btn').classList.add('hidden');
+            document.getElementById('submit-btn').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStep(1);
+            toggleSpecifyDisabled(false); 
+        });
+
+    </script>
+</body>
+</html>
