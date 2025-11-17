@@ -24,3 +24,11 @@ allowed to visit the next fom without completing any field
 new improvements
 
 users --> (according to company name ) company-name -->  Department : LPSP
+
+
+// inorder to store documents in a specific file we would need a web server (set up a backend)
+# using vanila javascript since js runs on the browser, the file storing can only be set up using the backend 
+
+----------
+
+
