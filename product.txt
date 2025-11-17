@@ -6,8 +6,21 @@ anythin field
 2 - after student enters their details for one section they are allowed to move on to the next section of the page else users are !
 allowed to visit the next fom without completing any field
 
-
+ <button type="button" id="upload-btn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
+                        <input type="file" id="file-input" class="hidden" accept=".pdf,.doc,.docx,.jpg,.png">
+                        Upload Document
+                    </button>
 (new feature)
 3 - after user completes their details, a small form shows all their completed details 
     and when they press submit the entire form goes to the registered email on formspree
 
+    improvements user can upload documents
+    - Upload highestQualification 
+    - identity document
+
+
+----------
+
+new improvements
+
+users --> (according to company name ) company-name -->  Department : LPSP
